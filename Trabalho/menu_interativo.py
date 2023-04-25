@@ -12,7 +12,7 @@ while True:
     print('0 - Sair')
 
     op = input('\nEscolha uma opção: ')
-
+    
     if op == '1':
         conectar()
         print('\nConexão estabelecida com sucesso!')

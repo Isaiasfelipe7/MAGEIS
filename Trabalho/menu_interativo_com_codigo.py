@@ -115,7 +115,6 @@ class ativo:
         cur = conn.cursor()
         cur.execute("SELECT * FROM ativos WHERE id_ativo = %s", (id_ativo,))
         atv = cur.fetchone()
-
         if atv is None:
             print('\nAtivo não encontrado!')
         else:
@@ -128,7 +127,6 @@ class ativo:
         cur = conn.cursor()
         cur.execute("SELECT * FROM ativos")
         ativos = cur.fetchall()
-        
         if not ativos:
             print('\nNão há nenhum ativo cadastrado!')
         else:
@@ -227,7 +225,6 @@ class transacoes:
 
     def cadastrar_transacao():
         cadastrar = transacoes(id_transacao=int(input('Informe o ID da transação: ')),data=input('Informe a data da transação (aaaa-mm--dd): '), tipo=input('Informe o tipo da transação (compra ou venda): '), valor_trans=float(input('Informe o valor da transação: ')), quantidade_trans=int(input('Informe a quantidade negociada: ')), corretora=input('Informe o nome da corretora: '), id_ativo=int(input('Informe o ID do ativo negociado: ')))
-
         print('\nTransação cadastrada com sucesso!')
 
     def excluir_transacao():
@@ -248,7 +245,6 @@ class transacoes:
         conn = conectar()
         cur.execute("SELECT * FROM trasacoes")
         rows = cur.fetchall()
-
         print('\n=== = LISTA DE TRANSAÇÕES = ===')
 
         for row in rows:
