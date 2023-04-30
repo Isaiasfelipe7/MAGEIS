@@ -243,14 +243,19 @@ class transacoes:
 
     def listar_transacoes():
         conn = conectar()
-        cur.execute("SELECT * FROM trasacoes")
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM transacoes")
         rows = cur.fetchall()
-        print('\n=== = LISTA DE TRANSAÇÕES = ===')
+        
+        if not rows:
+            print('\nNão há transações cadastradas!')
+        else:
+            print('\n=== = LISTA DE TRANSAÇÕES = ===')
 
-        for row in rows:
-            cur.execute("SELECT nome FROM ativos WHERE id_ativos=%s", (row[7]))
-            nome_ativo = cur.fetchone()[0]
-            print(f'\n{row[0]} - {row[1]} - {row[2]} - {row[4]} unidades de {nome_ativo} na corretora {row[5]} por {row[3]}BRL cada.')
+            for row in rows:
+                cur.execute("SELECT nome FROM ativos WHERE id_ativos=%s", (row[6],))
+                nome_ativo = cur.fetchone()[0]
+                print(f'\n{row[0]} - {row[1]} - {row[2]} - {row[4]} unidades de {nome_ativo} na corretora {row[5]} por {row[3]}BRL cada.')
     
 
     def __str__(self):
