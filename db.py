@@ -1,7 +1,7 @@
 import psycopg2
 
 class GerenciarBanco:
-    def __init__(self, dbname, user, password, port=5432, host='localhost'):
+    def __init__(self, dbname, user, password, port=5432, host='raja.db.elephantsql.com'):
         self.dbname = dbname
         self.__user = user
         self.__password = password
@@ -39,7 +39,7 @@ class GerenciarBanco:
         """)
         conec.commit()
         
-        print('\nTabela "ativos" criada com sucessfully!')
+        print('\nTabela "ativos" criada com sucesso!')
 
     def tabela_transacoes(self):
         insert = GerenciarBanco(self.dbname, self.__user, self.__password)
@@ -59,7 +59,7 @@ class GerenciarBanco:
         """)
         conec.commit()
 
-        print('\nTabela "transacoes" criada com sucessfully!')
+        print('\nTabela "transacoes" criada com sucesso')
     
     def dbname(self):
         return self.dbname
@@ -126,7 +126,7 @@ class Ativo:
         cur.execute('INSERT INTO ativos (id_ativo,nome, qtd, valor) VALUES (%s,%s, %s, %s)', (self.__id,self.nome, self.qtd, self.valor))
         conec.commit()
 
-        print(f'\nAtivo: {self.nome} cadastrado com sucessfully!')
+        print(f'\nAtivo: {self.nome} cadastrado com sucesso!')
 
     def listar_ativos(self):
         conec = GerenciarBanco.conectar_database(self)
