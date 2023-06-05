@@ -356,7 +356,7 @@ def listar_ativos():
     conn.close()
     cur.close()
 
-
+# Biblioteca -  pip install tabulate
 def mostrar_historico():
     conn = psycopg2.connect(
         database="sam",
@@ -384,7 +384,7 @@ def mostrar_historico():
     conn.close()
     cur.close()
 
-
+# Biblioteca - pip install prettytable
 def mostrar_historico2():
     conn = psycopg2.connect(
         database="sam",
