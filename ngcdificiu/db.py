@@ -209,12 +209,12 @@ def editar_transacao():
     cur = conn.cursor()
     codigo = input('Insira o código da transação: ')
 
-    # Retrieve the existing transaction details
+   
     cur.execute("SELECT * FROM investimentos WHERE codigo = %s", (codigo,))
     transaction = cur.fetchone()
 
     if transaction:
-        # Print the existing details for reference
+        
         print("\nDetalhes da transação:")
         print("Código:", transaction[0])
         print("Ativo:", transaction[1])
@@ -223,12 +223,12 @@ def editar_transacao():
         print("Taxa de Corretagem:", transaction[4])
         print("Tipo de Transação:", transaction[5])
 
-        # Prompt the user for updated values
+        
         quantidade = int(input('Insira a nova quantidade: '))
         valor_unit = float(input('Insira o novo valor unitário do ativo: '))
         taxa_corretagem = float(input('Insira a nova corretagem: '))
 
-        # Update the transaction details
+        
         cur.execute("""
             UPDATE investimentos
             SET quantidade = %s, valor_unit = %s, taxa_corretagem = %s
@@ -236,7 +236,7 @@ def editar_transacao():
         """, (quantidade, valor_unit, taxa_corretagem, codigo))
         conn.commit()
 
-        # Recalculate the transaction attributes
+        
         inv = investimentos(
             ativo=transaction[1],
             quantidade=quantidade,
@@ -282,7 +282,6 @@ def excluir_transacao():
     cur = conn.cursor()
     codigo = input('Insira o código da transação: ')
 
-    # Check if the transactions exist
     cur.execute("SELECT * FROM investimentos WHERE codigo = %s", (codigo,))
     transactions = cur.fetchall()
 
@@ -298,7 +297,7 @@ def excluir_transacao():
             print("Tipo de Transação:", transaction[5])
             print("--------------------------------")
 
-        # Prompt the user to choose which transaction to delete
+       
         while True:
             choice = input("Digite o número da transação que deseja excluir (ou '0' para cancelar): ")
             if choice.isdigit():
@@ -310,7 +309,6 @@ def excluir_transacao():
         if choice != 0:
             transaction = transactions[choice - 1]
 
-            # Print the chosen transaction details
             print("Detalhes da transação selecionada:")
             print("Código:", transaction[0])
             print("Ativo:", transaction[1])
@@ -319,10 +317,10 @@ def excluir_transacao():
             print("Taxa de Corretagem:", transaction[4])
             print("Tipo de Transação:", transaction[5])
 
-            # Confirm deletion
+            
             confirm = input("Tem certeza que deseja excluir esta transação? (S/N): ")
             if confirm.upper() == "S":
-                # Delete the chosen transaction
+                
                 cur.execute("DELETE FROM investimentos WHERE codigo = %s", (transaction[0],))
                 conn.commit()
                 print("Transação excluída com sucesso.")
@@ -357,8 +355,6 @@ def listar_ativos():
     conn.close()
     cur.close()
 
-
-from tabulate import tabulate
 
 def mostrar_historico():
     conn = psycopg2.connect(
