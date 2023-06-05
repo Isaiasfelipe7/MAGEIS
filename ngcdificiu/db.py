@@ -1,6 +1,7 @@
 import psycopg2
 import random
 from tabulate import tabulate
+from prettytable import PrettyTable
 
 class investimentos:
     def __init__(self,ativo,quantidade, valor_unit, taxa_corretagem, tipo_transacao, valor_operacao=0.0,  b3=0.0, valor_total=0.0, preco_medio = 0, resultado = None, total_lc = 0):
@@ -186,9 +187,9 @@ def cadastrar_dados():
     quantidade = int(input('Insira a quantidade: '))
     valor_unit = float(input('Insira o valor unitário do ativo: '))
     taxa_corretagem = float(input('Insira a corretagem: '))
-    tipo_op = input('Insira o tipo de transação: ').upper()
+    tipo_op = input('Insira o tipo de transação: ').upper()[0]
     inv = investimentos(ativo, quantidade, valor_unit, taxa_corretagem, tipo_op)
-    if tipo_op == 'COMPRA':
+    if tipo_op == 'C':
         inv.calc()
         inv.salvarDados()
         inv.precoMedio()
@@ -377,6 +378,34 @@ def mostrar_historico():
             tabela_transacoes.append(list(transacao))
 
         print(tabulate(tabela_transacoes, headers=headers, tablefmt="fancy_grid"))
+    else:
+        print("Nenhuma transação encontrada.")
+
+    conn.close()
+    cur.close()
+
+
+def mostrar_historico2():
+    conn = psycopg2.connect(
+        database="sam",
+        user="postgres",
+        password="postgres",
+        host="localhost",
+        port="5432"
+    )
+    cur = conn.cursor()
+
+    cur.execute("SELECT * FROM investimentos ORDER BY codigo")
+    transacoes = cur.fetchall()
+
+    if transacoes:
+        tabela = PrettyTable()
+        tabela.field_names = [desc[0] for desc in cur.description]
+
+        for transacao in transacoes:
+            tabela.add_row(transacao)
+
+        print(tabela)
     else:
         print("Nenhuma transação encontrada.")
 

@@ -6,7 +6,7 @@ def menu():
     print('3 - Excluir Transação')
     print('4 - Detalhamento')
     print('5 - Historico de Transações')
-    print('6 - ')
+    print('6 - H2')
 
 
 while True:
@@ -26,6 +26,6 @@ while True:
     elif op == '5':
         db.mostrar_historico()
     elif op == '6':
-        pass
+        db.mostrar_historico2()
     else:
         print('Opção Inválida. Tente Novamente!')
