@@ -284,11 +284,7 @@ def editar_transacao():
     cur = conn.cursor()
     codigo = input('Insira o código da transação a ser editada: ')
     cur.execute("SELECT * FROM investimentos WHERE codigo = %s", (codigo,))
-<<<<<<< HEAD
     res = cur.fetchall()
-=======
-    res = cur.fetchone()
->>>>>>> 07bb067b344f1cf1ffcd32ff149c8f953f622ed3
 
     if len(res) == 0:
         print("Nenhuma transação encontrada com o código fornecido.")
@@ -300,7 +296,6 @@ def editar_transacao():
 
     table = tabulate(table_data, headers="firstrow", tablefmt="fancy_grid")
     print(table)
-<<<<<<< HEAD
 
     # Solicitar a edição dos valores da transação
     data = rec_date()
@@ -308,7 +303,6 @@ def editar_transacao():
     quantidade = int(input('Insira a nova quantidade: '))
     valor_unitario = float(input('Insira o novo valor unitário: '))
     taxa_corretagem = float(input('Insira a nova taxa de corretagem: '))
-    tipo = input('Insira o novo tipo de transação: ').upper()[0]
 
     inv = investimentos(
         data=data,
@@ -316,7 +310,6 @@ def editar_transacao():
         quantidade=quantidade,
         valor_unit=valor_unitario,
         taxa_corretagem=taxa_corretagem,
-        tipo_transacao=tipo,
     )
     inv.codigo = codigo
     # Atualizar os valores no banco de dados
@@ -333,56 +326,6 @@ def editar_transacao():
 
 
 
-=======
-
-    # Solicitar a edição dos valores da transação
-    data = input('Insira a nova data: ')
-    ativo = input('Insira o novo ativo: ').upper()
-    quantidade = input('Insira a nova quantidade: ')
-    valor_unitario = input('Insira o novo valor unitário: ')
-    taxa_corretagem = input('Insira a nova taxa de corretagem: ')
-
-    inv = investimentos(
-        data=data,
-        ativo=ativo,
-        quantidade=quantidade,
-        valor_unit=valor_unitario,
-        taxa_corretagem=taxa_corretagem,
-        tipo_transacao=res[5],
-    )
-
-    # Atualizar os valores no banco de dados
-    if inv.tipo_transacao == 'C':
-        inv.compra()
-        inv.precoMedio()
-        inv.atualizarDados()
-        cur.execute("""
-            UPDATE investimentos
-            SET valor_operacao = %s, b3 = %s, valor_total = %s, preco_medio = %s, resultado = %s, total_lc = %s
-            WHERE codigo = %s
-        """, (
-            inv.valor_operacao, inv.b3, inv.valor_total,
-            inv.preco_medio, inv.resultado, inv.total_lc,
-            codigo
-        ))
-        conn.commit()
-
-    elif inv.tipo_transacao == 'V':
-        inv.venda()
-        inv.lucro_prejuizo()
-        inv.atualizarDados()
-        cur.execute("""
-            UPDATE investimentos
-            SET valor_operacao = %s, b3 = %s, valor_total = %s, preco_medio = %s, resultado = %s, total_lc = %s
-            WHERE codigo = %s
-        """, (
-            inv.valor_operacao, inv.b3, inv.valor_total,
-            inv.preco_medio, inv.resultado, inv.total_lc,
-            codigo
-        ))
-        conn.commit()
-
->>>>>>> 07bb067b344f1cf1ffcd32ff149c8f953f622ed3
     print("Transação atualizada com sucesso!")
 
     conn.close()
