@@ -2,7 +2,7 @@ import psycopg2
 import random 
 from datetime import datetime
 from tabulate import tabulate
-from prettytable import PrettyTable
+
 
 class investimentos:
     def __init__(self,data,ativo,quantidade, valor_unit, taxa_corretagem, tipo_transacao, valor_operacao=0.0,  b3=0.0, valor_total=0.0, preco_medio = 0, resultado = '', total_lc = 0):
@@ -28,6 +28,9 @@ class investimentos:
     @property
     def codigo(self):
         return self.__codigo
+    @codigo.setter
+    def codigo(self,valor):
+        self.__codigo = valor
     @property
     def ativo(self):
         return self.__ativo
@@ -105,8 +108,7 @@ class investimentos:
 
         cur = conn.cursor()
 
-        cur.execute('UPDATE investimentos SET quantidade = %s, valor_unit = %s, taxa_corretagem = %s, tipo_transacao = %s, valor_operacao = %s, b3 = %s, valor_total = %s, preco_medio = %s, resultado = %s, total_lc = %s WHERE codigo = %s', 
-                    (self.__quantidade, self.__valor_unit, self.__taxa_corretagem, self.__tipo_transacao, self.__valor_operacao, self.__b3, self.__valor_total, self.__preco_medio, self.__resultado,self.__total_lc, self.__codigo))
+        cur.execute('UPDATE investimentos SET data = %s, ativo = %s, quantidade = %s, valor_unit = %s, taxa_corretagem = %s, tipo_transacao = %s, valor_operacao = %s WHERE codigo = %s', (self.__data,self.__ativo,self.__quantidade, self.__valor_unit, self.__taxa_corretagem, self.__tipo_transacao, self.__valor_operacao,self.__codigo))
         conn.commit()
         cur.close()
         conn.close()
@@ -154,37 +156,54 @@ class investimentos:
         cur.close()
 
 
+    def change_cod(self,valor):
+        self.codigo = valor
+
+
 def lc_ativo():
     conn = psycopg2.connect(
-            database="yynfswhx",
-            user="yynfswhx",
-            password="fkDkWLY0e2WVbNOtBN4HPMktb94_sK0X",
-            host="silly.db.elephantsql.com",
-            port="5432"
-        )
+        database="yynfswhx",
+        user="yynfswhx",
+        password="fkDkWLY0e2WVbNOtBN4HPMktb94_sK0X",
+        host="silly.db.elephantsql.com",
+        port="5432"
+    )
     cur = conn.cursor()
-    ativo = input('Insira o nome do ativo: ').upper()
-    cur.execute('SELECT SUM(total_lc) as LucroTotal FROM investimentos WHERE ativo = %s', (ativo,))
+
+    cur.execute('SELECT ativo, SUM(total_lc) as LucroTotal FROM investimentos GROUP BY ativo')
     res = cur.fetchall()
+
+    table_data = [["Ativo", "Lucro Total"]]
     for row in res:
-        print(row)
+        table_data.append([row[0], row[1]])
+
+    table = tabulate(table_data, headers="firstrow", tablefmt="fancy_grid")
+    print(table)
+
     conn.close()
     cur.close()
 
 
+
 def lc_carteira():
     conn = psycopg2.connect(
-            database="yynfswhx",
-            user="yynfswhx",
-            password="fkDkWLY0e2WVbNOtBN4HPMktb94_sK0X",
-            host="silly.db.elephantsql.com",
-            port="5432"
-        ) 
+        database="yynfswhx",
+        user="yynfswhx",
+        password="fkDkWLY0e2WVbNOtBN4HPMktb94_sK0X",
+        host="silly.db.elephantsql.com",
+        port="5432"
+    )
     cur = conn.cursor()
+
     cur.execute('SELECT SUM(total_lc) as LucroTotal FROM investimentos')
-    conn.commit()
-    res = cur.fetchall()
-    print(res)
+    res = cur.fetchone()
+
+    lucro_total_carteira = res[0]
+    table_data = [["Lucro Total"], [lucro_total_carteira]]
+
+    table = tabulate(table_data, headers="firstrow", tablefmt="fancy_grid")
+    print(table)
+
     conn.close()
     cur.close()
 
@@ -194,23 +213,31 @@ def criar_cod():
     return cod
 
 
+
+
 def detalhamento():
     conn = psycopg2.connect(
-            database="yynfswhx",
-            user="yynfswhx",
-            password="fkDkWLY0e2WVbNOtBN4HPMktb94_sK0X",
-            host="silly.db.elephantsql.com",
-            port="5432"
-        )
+        database="yynfswhx",
+        user="yynfswhx",
+        password="fkDkWLY0e2WVbNOtBN4HPMktb94_sK0X",
+        host="silly.db.elephantsql.com",
+        port="5432"
+    )
     cur = conn.cursor()
     ativo = input('Insira o ativo da transação: ').upper()
     cur.execute("select * from investimentos where ativo = %s", (ativo,))
     res = cur.fetchall()
+
+    table_data = [["Data", "Código", "Ativo", "Quantidade", "Valor Unitário", "Taxa de Corretagem", "Tipo de Transação", "Valor Operação", "B3", "Valor Total", "Preço Médio", "Resultado", "Total LC"]]
     for row in res:
-        print(row)
-    
+        table_data.append(list(row))
+
+    table = tabulate(table_data, headers="firstrow", tablefmt="fancy_grid")
+    print(table)
+
     conn.close()
     cur.close()
+
 
 
 def rec_date():
@@ -220,22 +247,31 @@ def rec_date():
 
 
 def cadastrar_dados():
-    data = rec_date()
+    data = rec_date().date()
     ativo = input('Insira o nome do ativo: ').upper()
     quantidade = int(input('Insira a quantidade: '))
     valor_unit = float(input('Insira o valor unitário do ativo: '))
     taxa_corretagem = float(input('Insira a corretagem: '))
     tipo_op = input('Insira o tipo de transação: ').upper()[0]
-    inv = investimentos(data,ativo, quantidade, valor_unit, taxa_corretagem, tipo_op)
+    inv = investimentos(data, ativo, quantidade, valor_unit, taxa_corretagem, tipo_op)
     if tipo_op == 'C':
         inv.compra()
         inv.salvarDados()
         inv.precoMedio()
-        print('Sucesso!')
     if tipo_op == 'V':
         inv.venda()
         inv.salvarDados()
         inv.lucro_prejuizo()
+
+
+    table_data = [
+        ["Data", "Código", "Ativo", "Quantidade", "Valor Unitário", "Taxa de Corretagem", "Tipo de Transação"],
+        [str(inv.data), inv.codigo, inv.ativo, inv.quantidade, inv.valor_unit, inv.taxa_corretagem, inv.tipo_transacao]
+    ]
+    table = tabulate(table_data, headers="firstrow", tablefmt="fancy_grid")
+    print('Cadastro ralizado com sucesso!')
+    print(table)
+
 
 def editar_transacao():
     conn = psycopg2.connect(
@@ -246,84 +282,56 @@ def editar_transacao():
         port="5432"
     )
     cur = conn.cursor()
-    codigo = input('Insira o código da transação: ')
-
-   
+    codigo = input('Insira o código da transação a ser editada: ')
     cur.execute("SELECT * FROM investimentos WHERE codigo = %s", (codigo,))
-    transaction = cur.fetchone()
+    res = cur.fetchall()
 
-    if transaction:
-        
-        print("\nDetalhes da transação:")
-        print("Data:", transaction[0])
-        print("Código:", transaction[1])
-        print("Ativo:", transaction[2])
-        print("Quantidade:", transaction[3])
-        print("Valor Unitário:", transaction[4])
-        print("Taxa de Corretagem:", transaction[5])
-        print("Tipo de Transação:", transaction[6])
+    if len(res) == 0:
+        print("Nenhuma transação encontrada com o código fornecido.")
+        return
 
-        
-        quantidade = int(input('Insira a nova quantidade: '))
-        valor_unit = float(input('Insira o novo valor unitário do ativo: '))
-        taxa_corretagem = float(input('Insira a nova corretagem: '))
+    table_data = [["Data", "Código", "Ativo", "Quantidade", "Valor Unitário", "Taxa de Corretagem", "Tipo de Transação", "Valor Operação", "B3", "Valor Total", "Preço Médio", "Resultado", "Total LC"]]
+    for row in res:
+        table_data.append(list(row))
 
-        
-        cur.execute("""
-            UPDATE investimentos
-            SET quantidade = %s, valor_unit = %s, taxa_corretagem = %s
-            WHERE codigo = %s
-        """, (quantidade, valor_unit, taxa_corretagem, codigo))
-        conn.commit()
+    table = tabulate(table_data, headers="firstrow", tablefmt="fancy_grid")
+    print(table)
 
-       
-        inv = investimentos(
-            data=transaction[0],
-            ativo=transaction[2],
-            quantidade=quantidade,
-            valor_unit=valor_unit,
-            taxa_corretagem=taxa_corretagem,
-            tipo_transacao=transaction[5],
-        )
-        if inv.tipo_transacao == 'C':
-            inv.compra()
-            inv.precoMedio()
-            inv.atualizarDados()
-            cur.execute("""
-                UPDATE investimentos
-                SET valor_operacao = %s, b3 = %s, valor_total = %s, preco_medio = %s, resultado = %s, total_lc = %s
-                WHERE codigo = %s
-            """, (
-                inv.valor_operacao, inv.b3, inv.valor_total,
-                inv.preco_medio, inv.resultado, inv.total_lc,
-                codigo
-            ))
-            conn.commit()
+    # Solicitar a edição dos valores da transação
+    data = rec_date()
+    ativo = input('Insira o novo ativo: ').upper()
+    quantidade = int(input('Insira a nova quantidade: '))
+    valor_unitario = float(input('Insira o novo valor unitário: '))
+    taxa_corretagem = float(input('Insira a nova taxa de corretagem: '))
+    tipo = input('Insira o novo tipo de transação: ').upper()[0]
 
-        elif inv.tipo_transacao == 'V':
-            inv.venda()
-            inv.lucro_prejuizo()
-            inv.atualizarDados()
-            
-            cur.execute("""
-                UPDATE investimentos
-                SET valor_operacao = %s, b3 = %s, valor_total = %s, preco_medio = %s, resultado = %s, total_lc = %s
-                WHERE codigo = %s
-            """, (
-                inv.valor_operacao, inv.b3, inv.valor_total,
-                inv.preco_medio, inv.resultado, inv.total_lc,
-                codigo
-            ))
-            conn.commit()
+    inv = investimentos(
+        data=data,
+        ativo=ativo,
+        quantidade=quantidade,
+        valor_unit=valor_unitario,
+        taxa_corretagem=taxa_corretagem,
+        tipo_transacao=tipo,
+    )
+    inv.codigo = codigo
+    # Atualizar os valores no banco de dados
+    if inv.tipo_transacao == 'C':
+        inv.compra()
+        inv.atualizarDados()
+        inv.precoMedio()
 
 
-        print("Transação atualizada com sucesso.")
-    else:
-        print("Transação não encontrada.")
+    elif inv.tipo_transacao == 'V':
+        inv.venda()
+        inv.lucro_prejuizo()
+        inv.atualizarDados()
+
+
+
+    print("Transação atualizada com sucesso!")
 
     conn.close()
     cur.close()
-
 
 
 def excluir_transacao():
@@ -335,58 +343,31 @@ def excluir_transacao():
         port="5432"
     )
     cur = conn.cursor()
-    codigo = input('Insira o código da transação: ')
-
+    codigo = input('Insira o código da transação a ser excluída: ')
     cur.execute("SELECT * FROM investimentos WHERE codigo = %s", (codigo,))
-    transactions = cur.fetchall()
+    res = cur.fetchall()
 
-    if transactions:
-        print("Foram encontradas as seguintes transações com o código", codigo)
-        for i, transaction in enumerate(transactions):
-            print("Transação", i + 1)
-            print("Código:", transaction[0])
-            print("Ativo:", transaction[1])
-            print("Quantidade:", transaction[2])
-            print("Valor Unitário:", transaction[3])
-            print("Taxa de Corretagem:", transaction[4])
-            print("Tipo de Transação:", transaction[5])
-            print("--------------------------------")
+    if len(res) == 0:
+        print("Nenhuma transação encontrada com o código fornecido.")
+        return
 
-       
-        while True:
-            choice = input("Digite o número da transação que deseja excluir (ou '0' para cancelar): ")
-            if choice.isdigit():
-                choice = int(choice)
-                if 0 < choice <= len(transactions):
-                    break
-            print("Opção inválida. Tente novamente.")
+    table_data = [["Data", "Código", "Ativo", "Quantidade", "Valor Unitário", "Taxa de Corretagem", "Tipo de Transação", "Valor Operação", "B3", "Valor Total", "Preço Médio", "Resultado", "Total LC"]]
+    for row in res:
+        table_data.append(list(row))
 
-        if choice != 0:
-            transaction = transactions[choice - 1]
+    table = tabulate(table_data, headers="firstrow", tablefmt="fancy_grid")
+    print(table)
 
-            print("Detalhes da transação selecionada:")
-            print("Data:", transaction[0])
-            print("Código:", transaction[1])
-            print("Ativo:", transaction[2])
-            print("Quantidade:", transaction[3])
-            print("Valor Unitário:", transaction[4])
-            print("Taxa de Corretagem:", transaction[5])
-            print("Tipo de Transação:", transaction[6])
-
-            
-            confirm = input("Tem certeza que deseja excluir esta transação? (S/N): ")
-            if confirm.upper() == "S":
-                
-                cur.execute("DELETE FROM investimentos WHERE codigo = %s", (transaction[1],))
-                conn.commit()
-                print("Transação excluída com sucesso.")
-            else:
-                print("Operação de exclusão cancelada.")
+    confirmacao = input("Tem certeza de que deseja excluir esta transação? (S/N): ")
+    if confirmacao.lower() == "s":
+        cur.execute("DELETE FROM investimentos WHERE codigo = %s", (codigo,))
+        conn.commit()
+        print("Transação excluída com sucesso.")
     else:
-        print("Nenhuma transação encontrada com o código", codigo)
+        print("Exclusão cancelada.")
 
-    conn.close()
-    cur.close()
+        conn.close()
+        cur.close()
 
 # Biblioteca -  pip install tabulate
 def mostrar_historico():
@@ -410,34 +391,6 @@ def mostrar_historico():
             tabela_transacoes.append(list(transacao))
 
         print(tabulate(tabela_transacoes, headers=headers, tablefmt="fancy_grid"))
-    else:
-        print("Nenhuma transação encontrada.")
-
-    conn.close()
-    cur.close()
-
-# Biblioteca - pip install prettytable
-def mostrar_historico2():
-    conn = psycopg2.connect(
-        database="yynfswhx",
-        user="yynfswhx",
-        password="fkDkWLY0e2WVbNOtBN4HPMktb94_sK0X",
-        host="silly.db.elephantsql.com",
-        port="5432"
-    )
-    cur = conn.cursor()
-
-    cur.execute("SELECT * FROM investimentos ORDER BY codigo")
-    transacoes = cur.fetchall()
-
-    if transacoes:
-        tabela = PrettyTable()
-        tabela.field_names = [desc[0] for desc in cur.description]
-
-        for transacao in transacoes:
-            tabela.add_row(transacao)
-
-        print(tabela)
     else:
         print("Nenhuma transação encontrada.")
 
