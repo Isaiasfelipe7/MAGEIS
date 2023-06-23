@@ -35,7 +35,7 @@ while True:
     elif op == '8':
         db.reiniciar()
     elif op == '0':
-        print('Volte logo!')
+        print('\nVolte logo!')
         break
     else:
-        print('Opção Inválida. Tente Novamente!')
+        print('\nOpção Inválida. Tente Novamente!')
